@@ -110,13 +110,17 @@ document.body.style.overflow = "hidden";
 
 // ===== API =====
 async function verifyKey(key) {
+  const deviceId = getDeviceId(); // 👈 thêm dòng này
+
   const res = await fetch(API_URL + "/api/verify", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ key })
+    body: JSON.stringify({ key, deviceId }) // 👈 thêm deviceId
   });
+
   return res.json();
 }
+
 
 async function activateKey(key, deviceId) {
   const res = await fetch(API_URL + "/api/activate", {
@@ -191,14 +195,19 @@ document.getElementById("submitKey").onclick = async () => {
   unlock();
 
   // ===== ANTI BYPASS (check mỗi 5s) =====
-  setInterval(async () => {
-    const res = await verifyKey(key);
-    if (!res.ok) {
-     logout(res.error);
-    }
+setInterval(async () => {
+  const key = localStorage.getItem("vip_key"); // 👈 lấy lại mỗi lần
+  if (!key) return;
 
-  }, 5000);
+  const res = await verifyKey(key);
+
+  if (!res.ok) {
+    logout(res.error);
+  }
+
+}, 5000);
 })();
+
 
 // ===== BASIC ANTI DEVTOOLS =====
 document.addEventListener("keydown", e => {
