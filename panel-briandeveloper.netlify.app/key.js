@@ -1,222 +1,256 @@
-const API_URL = "https://api-server-key.tranphat1357t.workers.dev";
+(function () {
+  "use strict";
 
-// ===== DEVICE ID =====
-function getDeviceId() {
-  let id = localStorage.getItem("device_id");
-  if (!id) {
-    id = "DEV-" + Math.random().toString(36).substring(2, 10);
-    localStorage.setItem("device_id", id);
+  const API_URL = "https://api-server-key.tranphat1357t.workers.dev";
+
+  // ===== DEVICE ID =====
+  function getDeviceId() {
+    let id = localStorage.getItem("device_id");
+    if (!id) {
+      id = "DEV-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+      localStorage.setItem("device_id", id);
+    }
+    return id;
   }
-  return id;
-}
 
-// ===== UI LOCK =====
-// ===== UI LOCK (UPGRADE) =====
-const overlay = document.createElement("div");
-overlay.innerHTML = `
+  // ===== TIME =====
+  function getTime() {
+    return new Date().toLocaleString("vi-VN", {
+      timeZone: "Asia/Ho_Chi_Minh"
+    });
+  }
+
+  // ===== DEVICE INFO =====
+  function getDevice() {
+    return navigator.platform + " | " + navigator.userAgent.slice(0, 40);
+  }
+
+  // ===== UI =====
+  const overlay = document.createElement("div");
+  overlay.innerHTML = `
 <style>
-#lockScreen {
+#eliteUI {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: radial-gradient(circle at top, #1a0033, #000);
+  inset: 0;
+  background: radial-gradient(circle at top, #020617, #000);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 999999;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
+  color: #0ff;
 }
 
-.vip-box {
-  background: rgba(255,255,255,0.05);
-  border-radius: 20px;
-  padding: 40px;
+.box {
+  width: 360px;
+  padding: 25px;
+  border-radius: 18px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 40px #00f0ff44;
+}
+
+.title {
   text-align: center;
-  backdrop-filter: blur(15px);
-  box-shadow: 0 0 40px rgba(170, 0, 255, 0.5);
-  width: 320px;
-  animation: fadeIn 0.8s ease;
-}
-
-.vip-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
-  color: #d580ff;
-  text-shadow: 0 0 10px #b84dff;
-  margin-bottom: 20px;
-}
-
-.vip-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  outline: none;
-  text-align: center;
   margin-bottom: 15px;
-  background: rgba(255,255,255,0.1);
-  color: #fff;
+  color: #00f0ff;
 }
 
-.vip-input::placeholder {
-  color: #ccc;
+.label {
+  font-size: 12px;
+  margin: 8px 0 4px;
+  color: #00eaff;
 }
 
-.vip-btn {
+.input {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 8px;
   border: none;
-  background: linear-gradient(45deg, #8a2be2, #c084fc);
+  background: #020617;
+  color: #0ff;
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+.btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(45deg,#00eaff,#0066ff);
   color: white;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
-  box-shadow: 0 0 15px #a64dff;
 }
 
-.vip-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 25px #cc99ff;
+.btn.red {
+  background: linear-gradient(45deg,#ff0040,#ff4d4d);
 }
 
-.vip-msg {
+.btn.gray {
+  background: #111;
+}
+
+.info {
+  font-size: 11px;
   margin-top: 10px;
-  font-size: 14px;
+  background: #020617;
+  padding: 8px;
+  border-radius: 8px;
+  color: #aaa;
+  word-break: break-all;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.status {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.time {
+  margin-top: 5px;
+  text-align: center;
+  font-size: 11px;
+  color: #666;
 }
 </style>
 
-<div id="lockScreen">
-  <div class="vip-box">
-    <div class="vip-title">💜 KEY LOGIN</div>
-    
-    <input id="keyInput" class="vip-input" placeholder="VIP-XXXX-XXXX" />
-    
-    <button id="submitKey" class="vip-btn">XÁC NHẬN</button>
-    
-    <p id="msg" class="vip-msg"></p>
+<div id="eliteUI">
+  <div class="box">
+    <div class="title">⚡ ELITE TURBO</div>
+
+    <div class="label">MÃ KÍCH HOẠT</div>
+    <div class="row">
+      <input id="keyInput" class="input" placeholder="VIP-XXX-XXX" />
+      <button id="pasteBtn" class="btn gray">DÁN</button>
+      <button id="clearBtn" class="btn red">XÓA</button>
+    </div>
+
+    <div class="label">MÃ THIẾT BỊ</div>
+    <div class="row">
+      <input id="deviceId" class="input" readonly />
+      <button id="copyBtn" class="btn gray">SAO CHÉP</button>
+    </div>
+
+    <div class="row">
+      <button id="checkBtn" class="btn">Check Key</button>
+      <button id="activeBtn" class="btn">Mở</button>
+    </div>
+
+    <button id="resetBtn" class="btn gray" style="margin-top:8px;">RESET</button>
+
+    <div class="info">
+      UID: <span id="uid"></span><br>
+      DEVICE: <span id="device"></span>
+    </div>
+
+    <div id="status" class="status">Đang chờ...</div>
+    <div id="time" class="time"></div>
   </div>
 </div>
 `;
 
-document.body.appendChild(overlay);
-document.body.style.overflow = "hidden";
-
-
-// ===== API =====
-async function verifyKey(key) {
-  const res = await fetch(API_URL + "/api/verify", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      key,
-      deviceId: getDeviceId()
-    })
-  });
-  return res.json();
-}
-
-
-
-async function activateKey(key, deviceId) {
-  const res = await fetch(API_URL + "/api/activate", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ key, deviceId })
-  });
-  return res.json();
-}
-
-// ===== UNLOCK =====
-function unlock() {
-  document.getElementById("lockScreen")?.remove();
-  document.body.style.overflow = "auto";
-}
-function logout(reason = "KEY_INVALID") {
-  localStorage.removeItem("vip_key");
-
-  // hiện lại lock screen
-  if (!document.getElementById("lockScreen")) {
-    document.body.appendChild(overlay);
-  }
-
+  document.body.appendChild(overlay);
   document.body.style.overflow = "hidden";
 
-  const msg = document.getElementById("msg");
-  if (msg) {
-    msg.innerText = "🔒 Đã đăng xuất: " + reason;
-  }
-}
-
-
-// ===== LOGIN FLOW =====
-document.getElementById("submitKey").onclick = async () => {
-  const key = document.getElementById("keyInput").value;
-  const msg = document.getElementById("msg");
-
-  msg.innerText = "Đang kiểm tra...";
-
-  const v = await verifyKey(key);
-  if (!v.ok) {
-    msg.innerText = "❌ Key sai hoặc hết hạn";
-    return;
-  }
-
+  // ===== SET INFO =====
   const deviceId = getDeviceId();
-  const a = await activateKey(key, deviceId);
+  document.getElementById("deviceId").value = deviceId;
+  document.getElementById("uid").innerText = deviceId;
+  document.getElementById("device").innerText = getDevice();
 
-  if (!a.ok) {
-    msg.innerText = "❌ Key đã dùng trên thiết bị khác";
-    return;
+  // ===== TIME UPDATE =====
+  setInterval(() => {
+    document.getElementById("time").innerText = getTime();
+  }, 1000);
+
+  // ===== API =====
+  async function verifyKey(key) {
+    const res = await fetch(API_URL + "/api/verify", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ key, deviceId })
+    });
+    return res.json();
   }
 
-  localStorage.setItem("vip_key", key);
-
-  msg.innerText = "✅ Thành công!";
-  setTimeout(unlock, 500);
-};
-
-// ===== AUTO LOGIN =====
-(async () => {
-  const key = localStorage.getItem("vip_key");
-  if (!key) return;
-
-  const v = await verifyKey(key);
-  if (!v.ok) {
-   logout(v.error);
-   return;
+  async function activateKey(key) {
+    const res = await fetch(API_URL + "/api/activate", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ key, deviceId })
+    });
+    return res.json();
   }
 
+  // ===== BUTTON =====
+  const status = document.getElementById("status");
 
-  unlock();
+  document.getElementById("pasteBtn").onclick = async () => {
+    const text = await navigator.clipboard.readText();
+    document.getElementById("keyInput").value = text;
+  };
 
-  // ===== ANTI BYPASS (check mỗi 5s) =====
-setInterval(async () => {
-  const key = localStorage.getItem("vip_key");
-  if (!key) return;
+  document.getElementById("clearBtn").onclick = () => {
+    document.getElementById("keyInput").value = "";
+  };
 
-  const res = await verifyKey(key);
+  document.getElementById("copyBtn").onclick = () => {
+    navigator.clipboard.writeText(deviceId);
+    status.innerText = "📋 Đã copy UID";
+  };
 
-  if (!res.ok) {
-    if (["REVOKED","EXPIRED","DEVICE_NOT_BOUND"].includes(res.error)) {
-      logout(res.error);
+  document.getElementById("resetBtn").onclick = () => {
+    localStorage.removeItem("vip_key");
+    location.reload();
+  };
+
+  document.getElementById("checkBtn").onclick = async () => {
+    const key = document.getElementById("keyInput").value;
+    status.innerText = "Đang check...";
+
+    const res = await verifyKey(key);
+    if (res.ok) {
+      status.innerText = "✅ Key hợp lệ";
+    } else {
+      status.innerText = "❌ " + (res.error || "Key lỗi");
     }
-  }
+  };
 
-}, 5000);
+  document.getElementById("activeBtn").onclick = async () => {
+    const key = document.getElementById("keyInput").value;
+    status.innerText = "Đang kích hoạt...";
 
+    const res = await activateKey(key);
+    if (res.ok) {
+      localStorage.setItem("vip_key", key);
+      status.innerText = "✅ Thành công!";
+      setTimeout(() => {
+        document.getElementById("eliteUI").remove();
+        document.body.style.overflow = "auto";
+      }, 800);
+    } else {
+      status.innerText = "❌ " + (res.error || "Kích hoạt lỗi");
+    }
+  };
+
+  // ===== AUTO LOGIN =====
+  (async () => {
+    const key = localStorage.getItem("vip_key");
+    if (!key) return;
+
+    const res = await verifyKey(key);
+    if (res.ok) {
+      document.getElementById("eliteUI").remove();
+      document.body.style.overflow = "auto";
+    }
+  })();
 
 })();
-
-// ===== BASIC ANTI DEVTOOLS =====
-document.addEventListener("keydown", e => {
-  if (e.key === "F12") e.preventDefault();
-  if (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key)) e.preventDefault();
-});
-
-document.addEventListener("contextmenu", e => e.preventDefault());
